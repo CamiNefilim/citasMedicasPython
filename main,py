@@ -1,0 +1,114 @@
+# Importa modulo de tiempo
+import time
+
+#Importa clases
+from clases import Hospital, Doctor, Paciente
+
+#Importa modulos
+from modulos import agregar_doctor, agregar_paciente, pedir_fecha, actualiza_doctores_disponibles, obtener_doctor, obtener_paciente, agendar_cita, mostrar_comprobante, obtener_cita, reagendar_cita, consultar_citas, enviar_recordatorios
+
+# Crear un Hospital
+hospital = Hospital()
+
+# Agregar Doctores
+agregar_doctor(hospital, Doctor("11540720-9","Juan Alvarado",15000))
+agregar_doctor(hospital, Doctor("14562258-0","Pedro Gonzalez",16000))
+agregar_doctor(hospital, Doctor("5890001-2","Abigail Rojas",17000))
+
+#Inicia menú citas
+while True:
+    print("Menú")
+    print("1. Registrar paciente")
+    print("2. Agendar cita")
+    print("3. Modificar cita")
+    print("4. Consultar citas")    
+    print("5. Enviar recordatorios")
+    print("6. Salir")
+    opcion = input("Seleccione opción: ")
+    
+    # Evalúa las opciones
+    match opcion:
+        case "1":
+            run = input("Ingrese el RUN del paciente (Con guión y dígito verificador): ")
+            nombre = input("Ingrese el nombre del paciente: ")
+            agregar_paciente(hospital, Paciente(run,nombre))
+            print(f"Paciente {nombre} registrado exitosamente.")
+        case "2":
+            if(len(hospital.pacientes)==0):
+                print("No hay pacientes registrados para agendar citas.")
+            else:  
+                print("Para verificar disponibilidad de doctores:")
+                fecha = pedir_fecha("Introduce la fecha de cita (YYYY-MM-DD): ")
+                actualiza_doctores_disponibles(hospital, fecha)
+
+                if(len(hospital.doctores_disponibles)==0):
+                    print("No hay Doctores disponibles para la fecha entregada.")
+                    break
+                else:            
+                    # Imprime doctores disponibles
+                    print("Los Doctores disponibles para la fecha son: ")                
+                    for doc in hospital.doctores_disponibles:
+                        print(doc)  
+                    
+                    #Busca Doctor
+                    while True:
+                        run = input("Ingrese el RUN del doctor para reservar cita: ")
+                        doctor = obtener_doctor(run, hospital)         
+                        if doctor:
+                            break
+                        else:
+                            print("El RUN no es válido. ")
+                    
+                    #Busca Paciente
+                    while True:
+                        run = input("Ingrese el RUN del paciente para reservar cita: ")
+                        paciente = obtener_paciente(run, hospital)         
+                        if paciente:
+                            break
+                        else:
+                            print("El RUN no es válido. ")
+                        
+                    cita = agendar_cita(hospital, doctor, paciente, fecha)  
+                    mostrar_comprobante(cita)   
+        case "3":
+            #Busca cita
+            run = input("Ingrese el RUN del paciente para modificar cita: ")
+            cita = obtener_cita(run, hospital)         
+            if cita:
+                print(f"Tiene agendada la cita: {cita}.")
+                fecha = pedir_fecha("Introduce la fecha para nueva cita (YYYY-MM-DD): ")
+                actualiza_doctores_disponibles(hospital, fecha)
+
+                if(len(hospital.doctores_disponibles)==0):
+                    print("No hay Doctores disponibles para la fecha entregada.")
+                    break
+                else:            
+                    # Imprime doctores disponibles
+                    print("Los Doctores disponibles para la fecha son: ")                
+                    for doc in hospital.doctores_disponibles:
+                        print(doc)  
+                    
+                    #Busca Doctor
+                    while True:
+                        run = input("Ingrese el RUN del doctor para reservar cita: ")
+                        doctor = obtener_doctor(run, hospital)         
+                        if doctor:
+                            break
+                        else:
+                            print("El RUN no es válido. ")
+                    cita = reagendar_cita(hospital, cita, doctor, cita.paciente, fecha)  
+                    mostrar_comprobante(cita) 
+            else:
+                print("No se ha encontrado ninguna cita para el paciente ingresado. ")
+        case "4":
+            consultar_citas(hospital)
+        case "5":
+            enviar_recordatorios(hospital)
+        case "6":
+            print("Muchas gracias por usar mi sistema de reserva.")
+            break
+        case _:
+            print("No existe la opción ingresada")
+    
+    # Espera unos segundos para desplegar el menú
+    time.sleep(2)    
